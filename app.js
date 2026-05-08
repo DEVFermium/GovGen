@@ -4,253 +4,131 @@ const cors = require("cors")
 const fs = require("fs")
 const path = require("path")
 const sharp = require("sharp")
-const simpleGit = require("simple-git")
-
-const { slugify } =
-  require("transliteration")
+const { Octokit } = require("@octokit/rest")
+const { slugify } = require("transliteration")
 
 const app = express()
+const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN })
+
+const GITHUB_OWNER = "DEVFermium"
+const GITHUB_REPO = "GovGen"
+const NETLIFY_BASE = "https://govgen24.netlify.app"
 
 app.use(cors())
 app.use(express.json())
+app.use(express.static("public"))
+app.use("/generated", express.static(path.join(__dirname, "generated")))
 
-// public 폴더 제공
-app.use(
-  express.static("public")
-)
+const upload = multer({ dest: "uploads/" })
 
-// generated 폴더 제공
-app.use(
-  "/generated",
-  express.static(
-    path.join(
-      __dirname,
-      "generated"
-    )
-  )
-)
-
-// 업로드 임시 폴더
-const upload = multer({
-  dest: "uploads/"
-})
-
-// git 설정
-const git = simpleGit()
-
-
-
-// GitHub token
-const token =
-  process.env.GITHUB_TOKEN
-
-// repo 주소
-const repoUrl =
-  `https://${token}@github.com/DEVFermium/GovGen.git`
-
-// 사이트 ID 생성
+// ✅ 사이트 ID 생성
 function generateId(name) {
-
-  const slug =
-    slugify(name)
-      .toLowerCase()
-
-  const random =
-    Math.random()
-      .toString(36)
-      .substring(2, 6)
-
+  const slug = slugify(name).toLowerCase()
+  const random = Math.random().toString(36).substring(2, 6)
   return `confirm-${slug}-${random}`
 }
 
-// generate API
-app.post(
-  "/generate",
-  upload.single("photo"),
-  async (req, res) => {
+// ✅ GitHub에 파일 1개 업로드 (생성 or 업데이트 자동 처리)
+async function pushFileToGithub(filePath, contentBuffer) {
+  let sha
+  try {
+    const existing = await octokit.repos.getContent({
+      owner: GITHUB_OWNER,
+      repo: GITHUB_REPO,
+      path: filePath,
+    })
+    sha = existing.data.sha
+  } catch {
+    // 파일 없으면 sha 없이 새로 생성
+  }
 
-    try {
+  await octokit.repos.createOrUpdateFileContents({
+    owner: GITHUB_OWNER,
+    repo: GITHUB_REPO,
+    path: filePath,
+    message: `create ${filePath}`,
+    content: Buffer.from(contentBuffer).toString("base64"),
+    sha,
+  })
+}
 
-      const {
-        name,
-        birth,
-        location,
-        detailLocation,
-        cityHall
-      } = req.body
+// ✅ 폴더 전체를 GitHub에 업로드
+async function pushDirToGithub(localDir, githubBasePath) {
+  const entries = fs.readdirSync(localDir, { withFileTypes: true })
 
-      // 고유 ID 생성
-      const id =
-        generateId(name)
+  for (const entry of entries) {
+    const localPath = path.join(localDir, entry.name)
+    const githubPath = `${githubBasePath}/${entry.name}`
 
-      // 템플릿 경로
-      const templateDir =
-        path.join(
-          __dirname,
-          "templates",
-          "default"
-        )
-
-      // 생성 경로
-      const siteDir =
-        path.join(
-          __dirname,
-          "generated",
-          id
-        )
-
-      // 템플릿 전체 복사
-      fs.cpSync(
-        templateDir,
-        siteDir,
-        {
-          recursive: true
-        }
-      )
-
-      // HTML 수정
-      const htmlPath =
-        path.join(
-          siteDir,
-          "index.html"
-        )
-
-      let html =
-        fs.readFileSync(
-          htmlPath,
-          "utf8"
-        )
-
-      html = html
-        .replaceAll(
-          "{{NAME}}",
-          name || ""
-        )
-        .replaceAll(
-          "{{DATE}}",
-          birth || ""
-        )
-        .replaceAll(
-          "{{LOCATION}}",
-          location || ""
-        )
-        .replaceAll(
-          "{{LOCATIONDETAIL}}",
-          detailLocation || ""
-        )
-        .replaceAll(
-          "{{CITYHALL}}",
-          cityHall || ""
-        )
-
-      fs.writeFileSync(
-        htmlPath,
-        html
-      )
-
-      // 이미지 저장
-      if (req.file) {
-
-        await sharp(req.file.path)
-          .resize({
-            width: 1200
-          })
-          .jpeg({
-            quality: 90
-          })
-          .toFile(
-            path.join(
-              siteDir,
-              "user-photo.jpg"
-            )
-          )
-
-        // 임시파일 삭제
-        fs.unlinkSync(
-          req.file.path
-        )
-      }
-
-      // Git remote 설정
-      try {
-
-        await git.removeRemote(
-          "origin"
-        )
-
-      } catch {}
-
-      await git.addRemote(
-        "origin",
-        repoUrl
-      )
-
-      // git add
-      await git.add("./*")
-
-      await git.raw([
-        "config",
-        "user.email",
-        "bot@govgen.com"
-        ])
-
-        await git.raw([
-        "config",
-        "user.name",
-        "GovGen Bot"
-        ])
-
-      // commit
-      await git.commit(
-        `create ${id}`
-      )
-
-      // push
-      await git.push(
-        "origin",
-        "main"
-      )
-
-      // Netlify URL
-      const siteUrl =
-        `https://govgen24.netlify.app/${id}`
-
-      // 응답
-      res.json({
-        success: true,
-        id,
-        url: siteUrl
-      })
-
-    } catch (err) {
-
-      console.error(err)
-
-      res.status(500).json({
-        success: false,
-        error: err.message
-      })
+    if (entry.isDirectory()) {
+      await pushDirToGithub(localPath, githubPath)
+    } else {
+      const content = fs.readFileSync(localPath)
+      await pushFileToGithub(githubPath, content)
     }
+  }
+}
+
+// ✅ generate API
+app.post("/generate", upload.single("photo"), async (req, res) => {
+  try {
+    const { name, birth, location, detailLocation, cityHall } = req.body
+
+    if (!name) {
+      return res.status(400).json({ success: false, error: "name is required" })
+    }
+
+    const id = generateId(name)
+    const templateDir = path.join(__dirname, "templates", "default")
+    const siteDir = path.join(__dirname, "generated", id)
+
+    // 템플릿 복사
+    fs.cpSync(templateDir, siteDir, { recursive: true })
+
+    // HTML 수정
+    const htmlPath = path.join(siteDir, "index.html")
+    let html = fs.readFileSync(htmlPath, "utf8")
+
+    html = html
+      .replaceAll("{{NAME}}", name || "")
+      .replaceAll("{{DATE}}", birth || "")
+      .replaceAll("{{LOCATION}}", location || "")
+      .replaceAll("{{LOCATIONDETAIL}}", detailLocation || "")
+      .replaceAll("{{CITYHALL}}", cityHall || "")
+
+    fs.writeFileSync(htmlPath, html)
+
+    // 이미지 처리
+    if (req.file) {
+      await sharp(req.file.path)
+        .resize({ width: 1200 })
+        .jpeg({ quality: 90 })
+        .toFile(path.join(siteDir, "user-photo.jpg"))
+
+      fs.unlinkSync(req.file.path)
+    }
+
+    // ✅ GitHub에 전체 폴더 업로드 (git 없이 API로 직접)
+    await pushDirToGithub(siteDir, `generated/${id}`)
+
+    const siteUrl = `${NETLIFY_BASE}/${id}`
+
+    res.json({ success: true, id, url: siteUrl })
+
+  } catch (err) {
+    console.error("❌ generate error:", err)
+    res.status(500).json({ success: false, error: err.message })
+  }
 })
 
 // 홈
 app.get("/", (req, res) => {
-
   res.send(`
-    <h1>
-      GovGen API Server Running
-    </h1>
-
-    <a href="/test.html">
-      test page
-    </a>
+    <h1>GovGen API Server Running</h1>
+    <a href="/test.html">test page</a>
   `)
 })
 
-// 서버 시작
 app.listen(3000, () => {
-
-  console.log(
-    "server running on http://localhost:3000"
-  )
+  console.log("server running on http://localhost:3000")
 })
