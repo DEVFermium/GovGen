@@ -127,7 +127,7 @@ app.post(
           name || ""
         )
         .replaceAll(
-          "{{BIRTH}}",
+          "{{DATE}}",
           birth || ""
         )
         .replaceAll(
@@ -135,11 +135,11 @@ app.post(
           location || ""
         )
         .replaceAll(
-          "{{DETAIL_LOCATION}}",
+          "{{LOCATIONDETAIL}}",
           detailLocation || ""
         )
         .replaceAll(
-          "{{CITY_HALL}}",
+          "{{CITYHALL}}",
           cityHall || ""
         )
 
