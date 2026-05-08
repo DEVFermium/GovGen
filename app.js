@@ -38,15 +38,7 @@ const upload = multer({
 // git 설정
 const git = simpleGit()
 
-git.addConfig(
-  "user.name",
-  "GovGen Bot"
-)
 
-git.addConfig(
-  "user.email",
-  "bot@govgen.com"
-)
 
 // GitHub token
 const token =
@@ -195,6 +187,18 @@ app.post(
 
       // git add
       await git.add("./*")
+
+      await git.raw([
+        "config",
+        "user.email",
+        "bot@govgen.com"
+        ])
+
+        await git.raw([
+        "config",
+        "user.name",
+        "GovGen Bot"
+        ])
 
       // commit
       await git.commit(
