@@ -4,18 +4,47 @@ const cors = require("cors")
 const fs = require("fs")
 const path = require("path")
 const sharp = require("sharp")
+const simpleGit = require("simple-git")
 
-const { slugify } = require("transliteration")
+const { slugify } =
+  require("transliteration")
 
 const app = express()
 
 app.use(cors())
 app.use(express.json())
 
+// public 폴더 제공
+app.use(
+  express.static("public")
+)
+
+// generated 폴더 제공
+app.use(
+  "/generated",
+  express.static(
+    path.join(
+      __dirname,
+      "generated"
+    )
+  )
+)
+
 // 업로드 임시 폴더
 const upload = multer({
   dest: "uploads/"
 })
+
+// git 설정
+const git = simpleGit()
+
+// GitHub token
+const token =
+  process.env.GITHUB_TOKEN
+
+// repo 주소
+const repoUrl =
+  `https://${token}@github.com/DEVFermium/GovGen.git`
 
 // 사이트 ID 생성
 function generateId(name) {
@@ -29,10 +58,10 @@ function generateId(name) {
       .toString(36)
       .substring(2, 6)
 
-  return `confirm-${random}`
+  return `confirm-${slug}-${random}`
 }
 
-// 생성 API
+// generate API
 app.post(
   "/generate",
   upload.single("photo"),
@@ -40,7 +69,6 @@ app.post(
 
     try {
 
-      // 입력값
       const {
         name,
         birth,
@@ -49,7 +77,7 @@ app.post(
         cityHall
       } = req.body
 
-      // 사이트 고유 ID
+      // 고유 ID 생성
       const id =
         generateId(name)
 
@@ -61,7 +89,7 @@ app.post(
           "default"
         )
 
-      // 생성될 사이트 경로
+      // 생성 경로
       const siteDir =
         path.join(
           __dirname,
@@ -78,28 +106,26 @@ app.post(
         }
       )
 
-      // index.html 경로
+      // HTML 수정
       const htmlPath =
         path.join(
           siteDir,
           "index.html"
         )
 
-      // HTML 읽기
       let html =
         fs.readFileSync(
           htmlPath,
           "utf8"
         )
 
-      // placeholder 치환
       html = html
         .replaceAll(
           "{{NAME}}",
           name || ""
         )
         .replaceAll(
-          "{{DATE}}",
+          "{{BIRTH}}",
           birth || ""
         )
         .replaceAll(
@@ -107,21 +133,20 @@ app.post(
           location || ""
         )
         .replaceAll(
-          "{{LOCATIONDETAIL}}",
+          "{{DETAIL_LOCATION}}",
           detailLocation || ""
         )
         .replaceAll(
-          "{{CITYHALL}}",
+          "{{CITY_HALL}}",
           cityHall || ""
         )
 
-      // 수정된 HTML 저장
       fs.writeFileSync(
         htmlPath,
         html
       )
 
-      // 업로드 이미지 저장
+      // 이미지 저장
       if (req.file) {
 
         await sharp(req.file.path)
@@ -139,14 +164,48 @@ app.post(
           )
 
         // 임시파일 삭제
-        fs.unlinkSync(req.file.path)
+        fs.unlinkSync(
+          req.file.path
+        )
       }
 
-      // 성공 응답
+      // Git remote 설정
+      try {
+
+        await git.removeRemote(
+          "origin"
+        )
+
+      } catch {}
+
+      await git.addRemote(
+        "origin",
+        repoUrl
+      )
+
+      // git add
+      await git.add("./*")
+
+      // commit
+      await git.commit(
+        `create ${id}`
+      )
+
+      // push
+      await git.push(
+        "origin",
+        "main"
+      )
+
+      // Netlify URL
+      const siteUrl =
+        `https://govgen24.netlify.app/${id}`
+
+      // 응답
       res.json({
         success: true,
         id,
-        path: `/generated/${id}`
+        url: siteUrl
       })
 
     } catch (err) {
@@ -160,18 +219,21 @@ app.post(
     }
 })
 
-// generated 폴더 정적 제공
-app.use(
-  "/generated",
-  express.static(
-    path.join(
-      __dirname,
-      "generated"
-    )
-  )
-)
+// 홈
+app.get("/", (req, res) => {
 
-// 서버 실행
+  res.send(`
+    <h1>
+      GovGen API Server Running
+    </h1>
+
+    <a href="/test.html">
+      test page
+    </a>
+  `)
+})
+
+// 서버 시작
 app.listen(3000, () => {
 
   console.log(
