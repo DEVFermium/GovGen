@@ -1,75 +1,359 @@
 <!DOCTYPE html>
 <html lang="ko">
-<body>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>GovGen</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
-.wrap{max-width:480px;margin:2rem auto;padding:0 1rem;font-family:sans-serif}
-.title{font-size:18px;font-weight:500;margin-bottom:1.5rem}
-.fields{display:flex;flex-direction:column;gap:10px;margin-bottom:1rem}
-input[type=text],input[type=file]{width:100%;padding:8px 10px;border:1px solid #ddd;border-radius:8px;font-size:14px}
-.btn{width:100%;padding:10px;background:#111;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:500;cursor:pointer}
-.btn:disabled{opacity:.4;cursor:not-allowed}
-.result{margin-top:1.25rem;padding:1rem 1.25rem;background:#f5f5f5;border-radius:12px;display:none}
-.result-label{font-size:12px;color:#888;margin-bottom:6px}
-.result-link{font-size:14px;font-weight:500;color:#1a6ef5;word-break:break-all}
-.result-id{font-size:12px;color:#aaa;margin-top:6px;font-family:monospace}
-.err{margin-top:1rem;padding:.75rem 1rem;background:#fff0f0;border-radius:8px;font-size:13px;color:#cc0000;display:none}
-</style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-<div class="wrap">
-  <p class="title">GovGen 생성</p>
-  <form id="form">
-    <div class="fields">
-      <input type="text" name="name" placeholder="이름" required>
-      <input type="text" name="birth" placeholder="생년월일">
-      <input type="text" name="location" placeholder="위치">
-      <input type="text" name="detailLocation" placeholder="세부위치">
-      <input type="text" name="cityHall" placeholder="관할시청">
-      <input type="file" name="photo" accept="image/*">
+:root {
+  --bg: #07080f;
+  --surface: rgba(255,255,255,0.04);
+  --border: rgba(255,255,255,0.08);
+  --text: #eef0f8;
+  --text-secondary: rgba(238,240,248,0.5);
+  --text-muted: rgba(238,240,248,0.28);
+  --g1: #5b8fff;
+  --g2: #a259ff;
+  --g3: #ff6eb4;
+  --g4: #ffb347;
+  --grad: linear-gradient(135deg, var(--g1) 0%, var(--g2) 40%, var(--g3) 75%, var(--g4) 100%);
+  --grad-subtle: linear-gradient(135deg, rgba(91,143,255,0.12) 0%, rgba(162,89,255,0.08) 50%, rgba(255,110,180,0.06) 100%);
+  --r: 16px;
+  --r-sm: 10px;
+}
+
+html, body {
+  min-height: 100dvh;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Noto Sans KR', sans-serif;
+  font-weight: 300;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+.orb { position: fixed; border-radius: 50%; filter: blur(80px); pointer-events: none; z-index: 0; }
+.orb-1 { width: 340px; height: 340px; top: -80px; left: -60px; background: radial-gradient(circle, rgba(91,143,255,0.22) 0%, transparent 70%); }
+.orb-2 { width: 280px; height: 280px; top: 35%; right: -80px; background: radial-gradient(circle, rgba(162,89,255,0.18) 0%, transparent 70%); }
+.orb-3 { width: 240px; height: 240px; bottom: 10%; left: 10%; background: radial-gradient(circle, rgba(255,110,180,0.12) 0%, transparent 70%); }
+
+.tech-grid {
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background-image: linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+  background-size: 48px 48px;
+  mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 20%, transparent 80%);
+}
+
+.logo-bg { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); width: min(480px,100vw); opacity: 0.07; pointer-events: none; z-index: 0; }
+
+.page { position: relative; z-index: 1; min-height: 100dvh; display: flex; flex-direction: column; align-items: center; padding-bottom: 3rem; }
+
+.header { width: 100%; max-width: 440px; padding: 3rem 1.5rem 2rem; }
+
+.header-eyebrow {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 10px; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase;
+  color: transparent; background: var(--grad); -webkit-background-clip: text; background-clip: text;
+  margin-bottom: 10px;
+}
+.header-eyebrow::before { content: ''; display: inline-block; width: 18px; height: 1px; background: var(--grad); }
+
+.header-title { font-family: 'Space Grotesk', sans-serif; font-size: 30px; font-weight: 700; letter-spacing: -0.03em; line-height: 1.1; color: var(--text); margin-bottom: 8px; }
+.header-title span { background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.header-sub { font-size: 13px; color: var(--text-secondary); line-height: 1.6; }
+
+.wrap { width: 100%; max-width: 440px; padding: 0 1.25rem; display: flex; flex-direction: column; gap: 12px; }
+
+.card-outer { padding: 1px; border-radius: calc(var(--r) + 1px); background: linear-gradient(135deg, rgba(91,143,255,0.4) 0%, rgba(162,89,255,0.25) 50%, rgba(255,110,180,0.15) 100%); }
+.card { background: #0e1020; border-radius: var(--r); overflow: hidden; }
+
+.card-section { padding: 1.2rem 1.4rem 0; }
+.section-label {
+  font-family: 'Space Grotesk', sans-serif; font-size: 10px; font-weight: 600;
+  letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-muted);
+  margin-bottom: 1rem; display: flex; align-items: center; gap: 8px;
+}
+.section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+.fields { display: flex; flex-direction: column; }
+
+.field {
+  display: flex; flex-direction: column; gap: 4px;
+  padding: 0.9rem 1.4rem; border-bottom: 1px solid var(--border);
+  transition: background 0.2s; position: relative;
+}
+.field:last-child { border-bottom: none; }
+.field:focus-within { background: var(--grad-subtle); }
+.field:focus-within::before {
+  content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 2px;
+  background: var(--grad); border-radius: 0 2px 2px 0;
+}
+
+.field-label {
+  font-family: 'Space Grotesk', sans-serif; font-size: 10px; font-weight: 500;
+  letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); transition: color 0.2s;
+}
+.field:focus-within .field-label { background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
+
+.field input[type="text"] {
+  background: transparent; border: none; outline: none;
+  color: var(--text); font-family: 'Noto Sans KR', sans-serif;
+  font-size: 15px; font-weight: 400; width: 100%; caret-color: #5b8fff;
+}
+.field input::placeholder { color: var(--text-muted); font-size: 14px; }
+
+.photo-wrap { padding: 1rem 1.4rem 1.2rem; }
+.photo-zone {
+  border: 1px dashed rgba(91,143,255,0.3); border-radius: var(--r-sm);
+  background: rgba(91,143,255,0.04); cursor: pointer; overflow: hidden;
+  transition: border-color 0.2s, background 0.2s;
+}
+.photo-zone:hover { border-color: rgba(162,89,255,0.5); background: rgba(162,89,255,0.07); }
+.photo-inner { display: flex; align-items: center; gap: 14px; padding: 1rem 1.1rem; }
+.photo-icon-ring {
+  width: 40px; height: 40px; border-radius: 10px;
+  background: linear-gradient(135deg, rgba(91,143,255,0.2), rgba(162,89,255,0.2));
+  border: 1px solid rgba(162,89,255,0.25);
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.photo-icon-ring svg { width: 18px; height: 18px; stroke: #a259ff; fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.photo-info strong { display: block; font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 2px; }
+.photo-info span { font-size: 11px; color: var(--text-muted); }
+img.photo-preview { display: none; width: 100%; max-height: 180px; object-fit: cover; }
+input[type="file"] { display: none; }
+
+.progress-dots { display: flex; gap: 5px; align-items: center; padding: 0 1.4rem 1rem; }
+.dot { height: 3px; border-radius: 2px; background: var(--border); }
+.dot-1 { width: 22px; background: var(--grad); }
+.dot-2 { width: 14px; background: rgba(162,89,255,0.4); }
+.dot-3 { width: 8px; }
+.dot-label { font-size: 10px; color: var(--text-muted); margin-left: 4px; font-family: 'Space Grotesk', sans-serif; letter-spacing: 0.05em; }
+
+.btn-wrap { padding: 0 1.4rem 1.4rem; }
+.btn-submit {
+  width: 100%; padding: 15px; border: none; border-radius: var(--r-sm);
+  background: var(--grad); color: #fff;
+  font-family: 'Space Grotesk', sans-serif; font-size: 15px; font-weight: 600; letter-spacing: 0.02em;
+  cursor: pointer; position: relative; overflow: hidden;
+  transition: opacity 0.2s, transform 0.12s, box-shadow 0.2s;
+  box-shadow: 0 4px 24px rgba(91,143,255,0.25);
+}
+.btn-submit::after { content: ''; position: absolute; inset: 0; background: rgba(255,255,255,0); transition: background 0.15s; }
+.btn-submit:hover { box-shadow: 0 6px 32px rgba(162,89,255,0.35); }
+.btn-submit:hover::after { background: rgba(255,255,255,0.07); }
+.btn-submit:active { transform: scale(0.98); }
+.btn-submit:disabled { opacity: 0.4; cursor: not-allowed; box-shadow: none; }
+
+.feedback-card { padding: 1px; border-radius: calc(var(--r-sm) + 1px); display: none; animation: fadeUp 0.3s ease; }
+.feedback-card.success { background: linear-gradient(135deg, rgba(74,200,140,0.5), rgba(91,143,255,0.3)); }
+.feedback-card.error   { background: linear-gradient(135deg, rgba(255,80,80,0.4), rgba(255,110,180,0.2)); }
+.feedback-inner { border-radius: var(--r-sm); padding: 1.1rem 1.2rem; }
+.feedback-card.success .feedback-inner { background: rgba(10,20,18,0.95); }
+.feedback-card.error .feedback-inner   { background: rgba(20,10,12,0.95); }
+.feedback-tag { font-family: 'Space Grotesk', sans-serif; font-size: 10px; font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 8px; }
+.feedback-card.success .feedback-tag { color: #4ac88c; }
+.feedback-card.error .feedback-tag   { color: #ff5050; }
+.result-link { font-size: 14px; font-weight: 500; color: #7fb3ff; word-break: break-all; text-decoration: none; }
+.result-link:hover { text-decoration: underline; }
+.result-id { margin-top: 5px; font-size: 11px; color: var(--text-muted); font-family: 'Space Grotesk', monospace; letter-spacing: 0.05em; }
+.err-msg { font-size: 13px; color: #ff7070; }
+
+.loader { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.2); border-top-color: #fff; border-radius: 50%; animation: spin 0.65s linear infinite; vertical-align: -3px; margin-right: 8px; }
+
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+</style>
+</head>
+<body>
+
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+<div class="orb orb-3"></div>
+<div class="tech-grid"></div>
+
+<svg class="logo-bg" viewBox="0 0 500 500" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="lgMain" x1="0" y1="0" x2="500" y2="500" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#5b8fff"/>
+      <stop offset="50%" stop-color="#a259ff"/>
+      <stop offset="100%" stop-color="#ff6eb4"/>
+    </linearGradient>
+  </defs>
+  <circle cx="250" cy="250" r="220" stroke="url(#lgMain)" stroke-width="1" fill="none"/>
+  <circle cx="250" cy="250" r="170" stroke="url(#lgMain)" stroke-width="0.7" fill="none" stroke-dasharray="8 6"/>
+  <circle cx="250" cy="250" r="110" stroke="url(#lgMain)" stroke-width="0.7" fill="none"/>
+  <circle cx="250" cy="250" r="60"  stroke="url(#lgMain)" stroke-width="1" fill="none"/>
+  <line x1="250" y1="30"  x2="250" y2="470" stroke="url(#lgMain)" stroke-width="0.5"/>
+  <line x1="30"  y1="250" x2="470" y2="250" stroke="url(#lgMain)" stroke-width="0.5"/>
+  <line x1="94"  y1="94"  x2="406" y2="406" stroke="url(#lgMain)" stroke-width="0.4"/>
+  <line x1="406" y1="94"  x2="94"  y2="406" stroke="url(#lgMain)" stroke-width="0.4"/>
+  <line x1="250" y1="30"  x2="250" y2="46"  stroke="url(#lgMain)" stroke-width="1.5"/>
+  <line x1="250" y1="454" x2="250" y2="470" stroke="url(#lgMain)" stroke-width="1.5"/>
+  <line x1="30"  y1="250" x2="46"  y2="250" stroke="url(#lgMain)" stroke-width="1.5"/>
+  <line x1="454" y1="250" x2="470" y2="250" stroke="url(#lgMain)" stroke-width="1.5"/>
+  <path d="M94 138 L94 94 L138 94"  stroke="url(#lgMain)" stroke-width="1.2" fill="none"/>
+  <path d="M362 94 L406 94 L406 138"  stroke="url(#lgMain)" stroke-width="1.2" fill="none"/>
+  <path d="M94 362 L94 406 L138 406" stroke="url(#lgMain)" stroke-width="1.2" fill="none"/>
+  <path d="M406 362 L406 406 L362 406" stroke="url(#lgMain)" stroke-width="1.2" fill="none"/>
+  <circle cx="250" cy="250" r="6" fill="url(#lgMain)"/>
+  <circle cx="250" cy="250" r="18" stroke="url(#lgMain)" stroke-width="1" fill="none"/>
+  <circle cx="250" cy="80" r="3" fill="url(#lgMain)"/>
+  <circle cx="250" cy="420" r="3" fill="url(#lgMain)"/>
+  <circle cx="80" cy="250" r="3" fill="url(#lgMain)"/>
+  <circle cx="420" cy="250" r="3" fill="url(#lgMain)"/>
+  <polygon points="250,180 311,215 311,285 250,320 189,285 189,215" stroke="url(#lgMain)" stroke-width="0.7" fill="none"/>
+</svg>
+
+<div class="page">
+  <div class="header">
+    <div class="header-eyebrow">GovGen System</div>
+    <h1 class="header-title">문서 <span>생성</span></h1>
+    <p class="header-sub">정보를 입력하고 공식 문서를 즉시 발급받으세요.</p>
+  </div>
+
+  <div class="wrap">
+    <div class="card-outer">
+      <div class="card">
+        <div class="card-section">
+          <div class="section-label">기본 정보</div>
+        </div>
+        <div class="fields">
+          <div class="field">
+            <span class="field-label">이름</span>
+            <input type="text" id="name" placeholder="홍길동" autocomplete="name">
+          </div>
+          <div class="field">
+            <span class="field-label">생년월일</span>
+            <input type="text" id="birth" placeholder="1990.01.01">
+          </div>
+          <div class="field">
+            <span class="field-label">위치</span>
+            <input type="text" id="location" placeholder="서울특별시">
+          </div>
+          <div class="field">
+            <span class="field-label">세부 위치</span>
+            <input type="text" id="detailLocation" placeholder="강남구 테헤란로 123(역삼동)">
+          </div>
+          <div class="field">
+            <span class="field-label">관할 시청</span>
+            <input type="text" id="cityHall" placeholder="강남구청">
+          </div>
+        </div>
+
+        <div class="photo-wrap">
+          <label class="photo-zone" for="photo">
+            <div class="photo-inner">
+              <div class="photo-icon-ring">
+                <svg viewBox="0 0 24 24">
+                  <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                  <circle cx="12" cy="13" r="4"/>
+                </svg>
+              </div>
+              <div class="photo-info">
+                <strong id="photo-name">사진 첨부</strong>
+                <span>JPG, PNG, HEIC · 최대 10MB</span>
+              </div>
+            </div>
+            <img class="photo-preview" id="photo-preview" alt="미리보기">
+          </label>
+          <input type="file" id="photo" accept="image/*">
+        </div>
+
+        <div class="progress-dots">
+          <div class="dot dot-1"></div>
+          <div class="dot dot-2"></div>
+          <div class="dot dot-3"></div>
+          <span class="dot-label">정보 입력 중</span>
+        </div>
+
+        <div class="btn-wrap">
+          <button class="btn-submit" id="btn" onclick="handleSubmit()">생성하기 →</button>
+        </div>
+      </div>
     </div>
-    <button class="btn" type="submit" id="btn">생성</button>
-  </form>
-  <div class="err" id="err"></div>
-  <div class="result" id="result">
-    <p class="result-label">생성 완료 — 아래 링크를 눌러 확인하세요</p>
-    <a class="result-link" id="result-link" href="#" target="_blank" id="result-url"></a>
-    <p class="result-id" id="result-id"></p>
+
+    <div class="feedback-card success" id="result">
+      <div class="feedback-inner">
+        <p class="feedback-tag">✓ 생성 완료</p>
+        <a class="result-link" id="result-link" href="#" target="_blank"></a>
+        <p class="result-id" id="result-id"></p>
+      </div>
+    </div>
+
+    <div class="feedback-card error" id="err">
+      <div class="feedback-inner">
+        <p class="feedback-tag">오류 발생</p>
+        <p class="err-msg" id="err-msg"></p>
+      </div>
+    </div>
   </div>
 </div>
 
 <script>
-const form = document.getElementById("form")
-const btn = document.getElementById("btn")
-const resultBox = document.getElementById("result")
-const resultLink = document.getElementById("result-link")
-const resultId = document.getElementById("result-id")
-const errBox = document.getElementById("err")
+const photoInput = document.getElementById('photo')
+const photoPreview = document.getElementById('photo-preview')
+const photoName = document.getElementById('photo-name')
 
-form.addEventListener("submit", async (e) => {
-  e.preventDefault()
+photoInput.addEventListener('change', () => {
+  const file = photoInput.files[0]
+  if (!file) return
+  photoName.textContent = file.name
+  const reader = new FileReader()
+  reader.onload = e => {
+    photoPreview.src = e.target.result
+    photoPreview.style.display = 'block'
+  }
+  reader.readAsDataURL(file)
+})
+
+async function handleSubmit() {
+  const btn = document.getElementById('btn')
+  const errCard = document.getElementById('err')
+  const errMsg = document.getElementById('err-msg')
+  const resultCard = document.getElementById('result')
+
+  const name = document.getElementById('name').value.trim()
+  if (!name) {
+    errMsg.textContent = '이름을 입력해주세요.'
+    errCard.style.display = 'block'
+    resultCard.style.display = 'none'
+    return
+  }
+
   btn.disabled = true
-  btn.textContent = "생성 중..."
-  resultBox.style.display = "none"
-  errBox.style.display = "none"
+  btn.innerHTML = '<span class="loader"></span>생성 중...'
+  resultCard.style.display = 'none'
+  errCard.style.display = 'none'
+
+  const fd = new FormData()
+  fd.append('name', name)
+  fd.append('birth', document.getElementById('birth').value)
+  fd.append('location', document.getElementById('location').value)
+  fd.append('detailLocation', document.getElementById('detailLocation').value)
+  fd.append('cityHall', document.getElementById('cityHall').value)
+  if (photoInput.files[0]) fd.append('photo', photoInput.files[0])
 
   try {
-    const res = await fetch("/generate", { method: "POST", body: new FormData(form) })
+    const res = await fetch('/generate', { method: 'POST', body: fd })
     const data = await res.json()
-
-    if (!data.success) throw new Error(data.error || "서버 오류")
-
-    resultLink.href = data.url
-    resultLink.textContent = data.url
-    resultId.textContent = "ID: " + data.id
-    resultBox.style.display = "block"
-  } catch (err) {
-    errBox.textContent = "오류: " + err.message
-    errBox.style.display = "block"
+    if (!data.success) throw new Error(data.error || '서버 오류가 발생했습니다.')
+    document.getElementById('result-link').href = data.url
+    document.getElementById('result-link').textContent = data.url
+    document.getElementById('result-id').textContent = 'ID · ' + data.id
+    resultCard.style.display = 'block'
+  } catch(e) {
+    errMsg.textContent = e.message
+    errCard.style.display = 'block'
   } finally {
     btn.disabled = false
-    btn.textContent = "생성"
+    btn.innerHTML = '생성하기 →'
   }
-})
+}
 </script>
 </body>
 </html>
