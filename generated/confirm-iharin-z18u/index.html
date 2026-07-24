@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html>
+    <meta name="viewport" content="initial-scale=1.0; maximum-scale=1.0; minimum-scale=1.0; user-scalable=no;" />
+    <meta name="mobile-web-app-capable" content="yes"> <link rel="manifest" href="./manifest.json">
+     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script>
+         if (document.documentElement.requestFullscreen) {
+            document.documentElement.requestFullscreen();
+        } else if (document.documentElement.mozRequestFullScreen) { /* Firefox */
+            document.documentElement.mozRequestFullScreen();
+        } else if (document.documentElement.webkitRequestFullscreen) { /* Chrome, Safari and Opera */
+            document.documentElement.webkitRequestFullscreen();
+        } else if (document.documentElement.msRequestFullscreen) { /* IE/Edge */
+            document.documentElement.msRequestFullscreen();
+        }
+        let leftt = 29
+        playAlert = setInterval(function() {
+           if(leftt>=0){
+            document.getElementById('lefttimenum').innerText = String(leftt) + '초'
+           leftt = leftt - 1
+           }
+        }, 1000);
+    </script>
+    <style>
+       body {
+            font-family: 'Noto Sans KR', sans-serif;
+        }
+
+        @-webkit-keyframes moveleft {
+        0% {
+            left:0vw;
+        }
+        100% {
+            left:-500vw;
+        }
+        }
+        @-webkit-keyframes bar {
+        0% {
+            width: 75vw;
+        }
+        100% {
+            width: 0vw;
+        }
+        }
+        canvas#MainBackground {
+            background-color: rgb(255, 255, 255);
+            height: 200vh;
+            width: 100vw;
+            top: -20vh;
+            position: fixed;
+            top: 0%;
+            left:0%;
+            z-index: 0;
+        }
+        canvas#ServeBackground {
+            background-color: rgb(226, 235, 242);
+            width: 100vw;
+            height: 105vh;
+            top:-5vh;
+            position: fixed;
+            z-index: 1;
+            left: 0%;
+        }
+        img#logo {
+            height: 2.85vh;
+            z-index: 3;
+            position: fixed;
+            top: 9.7vh;
+            left: 5vw;
+        }
+        p#logoText {
+            position: fixed;
+            z-index: 3;
+            top: 9.7vh;
+            width: 50vw;
+            font-weight: bold;
+            font-size: 3.645vw;
+            left: 13vw;
+            top: 8.2vh;
+            color: rgb(68, 71, 80);
+        }
+        canvas#captureNo {
+            position: fixed;
+            z-index: 3;
+            height: 2.85vh;
+            width: 100vw;
+            bottom: 3.42vh;
+            left: 0vw;
+            background: linear-gradient(45deg,rgb(26,183,205),rgb(140, 81, 242));
+        }
+        p#text1 {
+            position: fixed;
+            z-index: 4;
+            color: rgba(255, 255, 255, 0.5);
+            bottom: 2.8vh;
+            font-weight: lighter;
+            width: 1000vw;
+            font-size: 2.5vw;
+            animation-name: moveleft;
+            animation-duration: 60s;
+            animation-iteration-count: infinite;
+            animation-direction: alternate;
+            animation-timing-function: linear;
+        }
+        canvas#MainFrame {
+            position: fixed;
+            z-index: 5;
+            width: 90vw;
+            height: 67.5vh;
+            background-color: rgb(255, 255, 255);
+            top: 18.85vh;
+            left: 5vw;
+            border-radius: 5vw;
+        }
+        canvas#detailButton {
+            position: fixed;
+            z-index: 6;
+            width: 90vw;
+            background-color: rgb(10, 96, 220);
+            height: 6.85vh;
+            left: 5vw;
+            bottom: 13.7vh;
+            border-bottom-left-radius: 5vw;
+            border-bottom-right-radius: 5vw;
+            
+        }
+        p#detailText {
+            position: fixed;
+            z-index: 7;
+            width: 100vw;
+            height: 6.85vh;
+            left: 0vw;
+            bottom: 10vh;
+            color: white;
+            font-size: 4vw;
+            text-align: center;
+        }
+        img#human {
+            position: fixed;
+            z-index: 7;
+            width: 37.5vw;
+            height: 22.85vh;
+            left: 31.25vw;
+            top: 24.56vh;
+        }
+        img#qr {
+            position: fixed;
+            z-index: 7;
+            width: 28.75vw;
+            right: 12.5vw;
+            top: 49.7vh;
+        }
+        p#birthday {
+            position: fixed;
+            top: 54.25vh;
+            z-index: 10;
+            left: 10vw;
+            width: 40vw;
+            font-size: 4vw;
+            font-weight: 700;
+        }
+        p#birthday2 {
+            position: fixed;
+            top: 57.25vh;
+            z-index: 10;
+            left: 15vw;
+            width: 40vw;
+            font-size: 4vw;
+            font-weight: 700;
+        }
+        p#username {
+            position: fixed;
+            top: 48.7vh;
+            z-index: 10;
+            width: 17.5vw;
+            left: 10vw;
+            font-weight: bolder;
+            font-size: 5.8vw;
+        }
+        p#username2 {
+            position: fixed;
+            top: 51.7vh;
+            z-index: 10;
+            width: 17.5vw;
+            left: 15vw;
+            font-weight: bolder;
+            font-size: 5.8vw;
+        }
+        p#local {
+            position: fixed;
+            top: 58vh;
+            z-index: 10;
+            left: 10vw;
+            width: 40vw;
+            font-size: 4vw;
+            font-weight: 500;
+        }
+        p#local2 {
+            position: fixed;
+            top: 61vh;
+            z-index: 10;
+            left: 15vw;
+            width: 70vw;
+            font-size: 4vw;
+            font-weight: 500;
+        }
+        p#sign {
+            position: fixed;
+            top: 75.5vh;
+            z-index: 10;
+            text-align: center;
+            left: 0vw;
+            width: 100vw;
+            font-size: 5vw;
+            font-weight: 400;
+        }
+        p#day {
+            position: fixed;
+            top: 72vh;
+            z-index: 10;
+            left: 0vw;
+            width: 100vw;
+            text-align: center;
+            font-size: 4vw;
+            font-weight: 500;
+        }
+        canvas#backbar {
+            position: fixed;
+            z-index: 11;
+            background-color: rgb(238,238,238);
+            border-radius: 50vh;
+            width: 75vw;
+            left: 12.5vw;
+            height: 0.5vh;
+            top: 67.42vh;
+        }
+        canvas#mainbar {
+            position: fixed;
+            background-color: rgb(4, 95, 220);
+            z-index: 12;
+            border-top-left-radius: 50vh;
+            border-bottom-left-radius: 50vh;
+            left: 12.5vw;
+            height: 0.5vh;
+            top: 67.42vh;
+            animation-name: bar;
+            animation-duration: 30s;
+            animation-iteration-count: 1;
+            animation-direction: alternate;
+            animation-timing-function: linear;
+        }
+        p#lefttime {
+            position: fixed;
+            z-index: 13;
+            color: rgb(101, 164, 226);
+            bottom: 26.85vh;
+            left: 12.5vw;
+            width: 30vw;
+            font-size: 3.75vw;
+            font-weight: 400;
+        }
+        p#lefttimenum {
+            position: fixed;
+            z-index: 13;
+            color: rgb(101, 164, 226);
+            bottom: 26.85vh;
+            left: 80vw;
+            width: 30vw;
+            font-size: 3.75vw;
+            font-weight: 400;
+        }
+        p#qrtext {
+            position: fixed;
+            z-index: 13;
+            color: rgb(149,149,149);
+            bottom: 23vh;
+            left: 0vw;
+            width: 100vw;
+            font-size: 3.5vw;
+            font-weight: 400;
+            text-align: center;
+        }
+        img#menuicon {
+            position: fixed;
+            z-index: 5;
+            width: 6.25vw;
+            top: 9.7vh;
+            right: 3.5vw;
+        }
+        canvas#intro {
+            background-color: white;
+            position: fixed;
+            width: 100vw;
+            height: 100vh;
+            left: 0vw;
+            top: 0vh;
+            color: white;
+            z-index: 150;
+        }
+
+        img#logo24 {
+            width: 15vw;
+            left: 42.7vw;
+            top: 46vh;
+            z-index: 150;
+            position: fixed;
+        }
+
+        p#logo24txt {
+            position: fixed;
+            z-index: 150;
+            color: rgba(0, 0, 0, 0.722);
+            bottom: 10vh;
+            left: 44.5vw;
+            width: 30vw;
+            font-size: 5vw;
+            font-weight: 500;
+        }
+
+
+        #menuOverlay {
+        position: fixed;
+        top: 0;
+        left: 100%;
+        width: 100vw;
+        height: 100vh;
+        background: #fff;
+        z-index: 9999;
+        transition: left 0.2s ease;
+        }
+
+        #menuOverlay.open {
+        left: 20%;
+        }
+
+        #menuOverlay iframe {
+        width: 100%;
+        height: 100%;
+        border: none;
+        
+        }
+
+        #menuShadow {
+            position: fixed;
+            display: none;
+            top: 0vh;
+            left: 0vw;
+            width: 100vw;
+            height: 100vh;
+            z-index: 9995;
+            background-color: rgba(0, 0, 0, 0);
+            transition: left 0.2s ease;
+        }
+
+        #menuShadow.open {
+            display: block;
+            background-color: rgba(0, 0, 0, 0.2);
+        }
+
+    </style>
+    <head>
+        
+
+    </head>
+
+    <body>
+        <div>
+            <canvas id="MainBackground"></canvas>
+            <canvas id="ServeBackground"></canvas>
+        </div>
+       <div>
+        <img src="./govern.png" id="logo">
+        <p id="logoText">주민등록증모바일확인서비스</p>
+        <img src="./menu.png" id="menuicon" onclick="openMenu();">
+       </div>
+       <div>
+        <canvas id="captureNo"></canvas>
+        <p id="text1">캡처방지 시스템이 작동 중입니다. 캡처방지 시스템이 작동 중입니다. 캡처방지 시스템이 작동 중입니다. 캡처방지 시스템이 작동 중입니다. 캡처방지 시스템이 작동 중입니다. 캡처방지 시스템이 작동 중입니다. 캡처방지 시스템이 작동 중입니다. 캡처방지 시스템이 작동 중입니다. 캡처방지 시스템이 작동 중입니다. 캡처방지 시스템이 작동 중입니다. 캡처방지 시스템이 작동 중입니다. 캡처방지 시스템이 작동 중입니다. 캡처방지 시스템이 작동 중입니다. 캡처방지 시스템이 작동 중입니다. 캡처방지 시스템이 작동 중입니다. 캡처방지 시스템이 작동 중입니다. 캡처방지 시스템이 작동 중입니다. 캡처방지 시스템이 작동 중입니다. 캡처방지 시스템이 작동 중입니다. 캡처방지 시스템이 작동 중입니다. 캡처방지 시스템이 작동 중입니다. 캡처방지 시스템이 작동 중입니다. 캡처방지 시스템이 작동 중입니다. 캡처방지 시스템이 작동 중입니다. </p>
+       </div>
+       <div>
+        <canvas id="MainFrame"></canvas>
+        <canvas id="detailButton"></canvas>
+        <p id="detailText" onclick="onClickedDetail();">상세정보 표시</p>
+        <img id="human" src="./user-photo.jpg">
+        <img id="qr" src="./qrcode.jpg">
+        <p id="username">이하린</p>
+        <p id="birthday">070531-4150120</p>
+        <p id="local">인천광역시 연수구</p>
+        <p id="lefttime">남은시간</p>
+        <p id="lefttimenum">30초</p>
+        <p id="qrtext">QR코드를 리더기에 스캔하세요</p>
+        <p id="username2">이하린</p>
+        <p id="birthday2">070531-4150120</p>
+        <p id="local2">인천광역시 연수구 먼우금로 141번길(동춘동)</p>
+        <p id="day">20.01.04</p>
+        <p id="sign">인천광역시청</p>
+        <canvas id="intro"></canvas>
+        <img id="logo24" src="./logo24.png">
+        <canvas id="backbar"></canvas>
+        <canvas id="mainbar"></canvas>
+        <p id="logo24txt">정부24</p>
+
+        
+
+        <style>
+            .fade {
+            transition: opacity 0.12s ease, visibility 0s linear 0.12s;
+            opacity: 1;
+            visibility: visible;
+            }
+
+            /* 사라지는 상태 */
+            .fade.hidden {
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.12s ease, visibility 0s linear 0.12s;
+            }
+
+            /* 나타나는 상태 */
+            .fade.visible {
+            opacity: 1;
+            visibility: visible;
+            transition: opacity 0.12s ease, visibility 0s linear 0s; /* 바로 visibility visible */
+            }
+        </style>
+        <script>
+            setTimeout(() => {
+                document.getElementById("logo24").className = "fade";
+                document.getElementById("logo24txt").className = "fade";
+                document.getElementById("logo24").classList.add("hidden");
+                document.getElementById("logo24txt").classList.add("hidden");
+                document.getElementById("intro").className = "fade";
+                document.getElementById("intro").classList.add("hidden");
+            }, 1000);
+            function getTodayDate() {
+                const today = new Date();
+                const year = String(today.getFullYear()).slice(2); // 연도 뒤 두 자리
+                const month = String(today.getMonth() + 1).padStart(2, '0'); // 월 (0부터 시작해서 +1), 두 자리 맞춤
+                const day = String(today.getDate()).padStart(2, '0'); // 일, 두 자리 맞춤
+
+                return `${year}.${month}.${day}`;
+            }
+            document.getElementById("day").innerText = getTodayDate();
+
+            let visibleList = [
+                    document.getElementById("birthday2"),
+                    document.getElementById("username2"),
+                    document.getElementById("local2"),
+                    document.getElementById("sign"),
+                    document.getElementById("day")
+            ]
+                for (let i=0; i<visibleList.length; i++) {
+                    let target = visibleList[i];
+                    target.className = "fade";
+                    target.classList.add("hidden");
+                }
+                
+            setTimeout(() => {
+                document.getElementById("mainbar").style.width = "0vw";
+                document.getElementById("qrtext").innerText = "시간이 만료되었어요. 다시 로그인해주세요.";
+                document.getElementById("qrtext").style.color = "rgb(255,0,0)";
+            }, 30000);
+
+            function onClickedDetail() {
+                let fadeoutList = [
+                    document.getElementById("detailButton"),
+                    document.getElementById("qrtext"),
+                    document.getElementById("mainbar"),
+                    document.getElementById("backbar"),
+                    document.getElementById("lefttime"),
+                    document.getElementById("lefttimenum"),
+                    document.getElementById("local"),
+                    document.getElementById("username"),
+                    document.getElementById("birthday"),
+                    document.getElementById("qr")
+
+                ]
+
+                
+                
+                for (let i=0; i<fadeoutList.length; i++) {
+                    let target = fadeoutList[i];
+                    target.className = "fade";
+                    target.classList.add("hidden");
+                }
+
+                setTimeout(() => {
+                    for (let i=0; i<visibleList.length; i++) {
+                    let target = visibleList[i];
+                    target.className = "fade";
+                    target.classList.add("visible");
+                }
+                }, 100);
+
+                setTimeout(() => {
+                    
+
+
+                for (let i=0; i<visibleList.length; i++) {
+                    let target = visibleList[i];
+                    target.className = "fade";
+                    target.classList.add("hidden");
+                }
+                setTimeout(() => {
+                    for (let i=0; i<fadeoutList.length; i++) {
+                    let target = fadeoutList[i];
+                    target.className = "fade";
+                    target.classList.add("visible");
+
+
+                }
+                }, 100);
+                }, 5000);
+                // detailBtn1.style.display = "none";
+                // qrTxt.style.display = "none";
+                // mainBar.style.display = "none";
+                // backBar.style.display = "none";
+                // lefttime.style.display = "none";
+                // lefttimeNum.style.display = "none";
+                // qr.style.display = "none";
+                // local.style.display = "none";
+                // username.style.display = "none";
+                // birthday.style.display = "none";
+            }
+        </script>
+       </div>
+       <style>
+            .menuHidden {
+                display: none;
+            }
+        </style>
+        <script>
+            function exit() {
+                window.close();
+            }
+        </script>
+       <div class="menuTabMain" id="menuTabMain">
+        <canvas id="menuTab"></canvas>
+        <canvas id="menuBackShadow"></canvas>
+        <img id="menuTop" src="./menuTop.png">
+        <img id="closeButton" src="./close.png" onclick="menuOff();">
+        <p id="exit" onclick="exit();">나가기</p>
+        
+
+        <script>
+            
+        </script>
+
+
+        
+            
+
+
+
+        <style>
+            p#exit {
+                bottom: 1vh;
+                width: 50vw;
+                left: 45vw;
+                color: black;
+                position: absolute;
+                text-align: center;
+                font-size: 6vw;
+                z-index: 6000;
+                font-weight: 600;
+            }
+            canvas#menuTab {
+                width: 60vw;
+                height: 100vh;
+                right: 0vw;
+                top: 0vh;
+                position: absolute;
+                background-color: rgb(255, 255, 255);
+                z-index: 5000;
+            }
+            canvas#menuBackShadow {
+                width: 40vw;
+                height: 100vh;
+                left: 0vw;
+                top: 0vh;
+                position: absolute;
+                background-color: rgba(0,0,0,0.2);
+                z-index: 4000;
+            }
+            img#closeButton {
+                width: 10vw;
+                position: absolute;
+                z-index: 10000;
+                right: 2vw;
+                top: 1.1vh;
+            }
+            img#menuTop {
+                width: 35vw;
+                left: 45vw;
+                position: absolute;
+                z-index: 6000;
+            }
+            #menuImg {
+                width: 70vw;
+                position: fixed;
+                z-index: 10000;
+                top: 1vh;
+                left: 110vw;
+                transition-duration: 0.2s;
+            }
+
+            #menuImg.open {
+                left: 26vw;
+
+            }
+
+            #menuCloseBtn {
+                opacity: 0;
+                position: fixed;
+                width: 10vw;
+                height: 5vh;
+                right: 3vw;
+                top: -1vh;
+                z-index: 15000;
+                background-color: rgb(0, 0, 0);
+                display: none;
+            }
+
+            #menuCloseBtn.open {
+                display: block;
+            }
+        </style>
+
+        
+       </div>
+
+       
+        <script>
+           
+            document.getElementById("menuTabMain").classList.toggle("menuHidden");
+            function menuOn() {
+                document.getElementById("menuTabMain").classList.remove("menuHidden");
+                console.log("Menu On")
+            }
+
+            function menuOff() {
+                document.getElementById("menuTabMain").classList.toggle("menuHidden");
+                console.log("Menu Off");
+            }
+        </script>
+
+
+        <div id="menuOverlay">
+            <div></div>
+            <img src="./menuMain2.png" id="menuImg">
+            <p id="menuCloseBtn" onclick="closeMenu();"></p>
+        </div>
+        <div id="menuShadow"></div>
+
+        <script>
+            function openMenu() {
+                document.getElementById('menuOverlay').classList.add('open');
+                document.getElementById('menuShadow').classList.add('open');
+                document.getElementById('menuImg').classList.add('open');
+                document.getElementById('menuCloseBtn').classList.add('open');
+            }
+
+            function closeMenu() {
+                document.getElementById('menuOverlay').classList.remove('open');
+                document.getElementById('menuShadow').classList.remove('open');
+                document.getElementById('menuImg').classList.remove('open');
+                document.getElementById('menuCloseBtn').classList.remove('open');
+            }
+        </script>
+
+    </body>
+</html>
